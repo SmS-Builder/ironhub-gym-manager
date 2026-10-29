@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRONHUB | Gym Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+:root{--bg:#101114;--panel:#191b20;--border:#2c2f37;--text:#f5f5f5;--muted:#9b9eaa;--green:#b9f65c;--red:#ff6868}
+body{background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer}
+[hidden]{display:none!important}
+.layout{display:flex;min-height:100vh}
+aside{width:225px;flex-shrink:0;background:#15161a;border-right:1px solid var(--border);padding:25px 17px}
+.logo{font-size:23px;font-weight:bold;margin-bottom:35px}.logo span{color:var(--green)}
+.nav-label{color:var(--muted);font-size:11px;letter-spacing:1.5px;margin:25px 10px 12px}
+.nav-item{display:block;width:100%;text-align:left;background:transparent;color:#c4c5cc;border:0;border-radius:8px;padding:13px 11px;margin:5px 0}
+.nav-item:hover,.nav-item.active{background:#282e21;color:var(--green)}
+.sidebar-note,.subtitle,.notice{color:var(--muted);font-size:13px;line-height:1.6}
+.sidebar-note{margin:30px 8px}
+main{flex:1;min-width:0;padding:28px}
+header,.section-heading,.toolbar,.actions,.account-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header{margin-bottom:28px}h1{font-size:27px;margin-bottom:7px}h2{font-size:18px}
+.primary-btn{background:var(--green);color:#171b11;border:0;border-radius:8px;padding:12px 16px;font-weight:bold}
+.primary-btn:hover{background:#d0ff8c}
+.secondary-btn,.danger-btn,.cancel-btn{padding:9px 11px;border-radius:6px;border:1px solid var(--border);background:#24262c;color:white;font-size:12px}
+.danger-btn{color:#ff8d8d}.cancel-btn{font-size:14px;padding:12px 16px}
+.account-email{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:24px}
+.stat-card,.section{background:var(--panel);border:1px solid var(--border);border-radius:12px}
+.stat-card{padding:20px}.stat-title{font-size:13px;color:var(--muted);margin-bottom:15px}
+.stat-value{font-size:28px;font-weight:bold}.stat-description{font-size:12px;color:var(--muted);margin-top:8px}
+.green{color:var(--green)}.yellow{color:#ffcf65}.red{color:#ff6868}
+.section{margin-bottom:22px;overflow:hidden}.section-heading{padding:20px}
+.toolbar{justify-content:flex-start;padding:0 20px 17px}
+input,select{background:#111216;color:white;border:1px solid var(--border);border-radius:7px;padding:11px;min-width:0}
+.search{flex:1;min-width:180px}.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap}
+th{background:#202127;color:var(--muted);font-size:11px;text-transform:uppercase}
+th,td{padding:14px 16px;border-top:1px solid var(--border)}td{font-size:13px}
+.member-name{font-weight:bold;margin-bottom:5px}.member-id{font-size:11px;color:var(--muted)}
+.status{display:inline-block;padding:6px 9px;border-radius:20px;font-size:11px;font-weight:bold}
+.status.active{background:#233523;color:#a8f5a0}.status.soon{background:#44371e;color:#ffda80}.status.expired{background:#482525;color:#ffaaaa}
+.actions{justify-content:flex-start;gap:5px}.alert-list{padding:0 20px 15px}
+.alert-row{padding:15px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.alert-row p{color:var(--muted);font-size:12px;margin-top:5px}
+.empty{text-align:center;padding:24px;color:var(--muted)}
+.notice{font-size:12px;margin-top:15px}
+dialog{width:min(520px,calc(100% - 28px));max-height:90vh;overflow-y:auto;margin:auto;background:var(--panel);color:white;border:1px solid var(--border);border-radius:14px;padding:24px}
+dialog::backdrop{background:#000b}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:22px 0}
+.field{display:flex;flex-direction:column;gap:8px}.field.full{grid-column:1/-1}
+.field label,.auth-card label{font-size:12px;color:#c4c5cc}
+.field input,.field select{width:100%}
+.dialog-actions{display:flex;justify-content:flex-end;gap:10px}
+.payment-note{color:var(--muted);font-size:12px;line-height:1.5;grid-column:1/-1}
+.auth-screen{min-height:100vh;display:grid;place-items:center;padding:22px;background:radial-gradient(circle at top right,#26301b,#101114 48%)}
+.auth-card{width:min(430px,100%);background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:30px;box-shadow:0 18px 60px #0006}
+.auth-card .logo{margin-bottom:15px}.auth-card h1{font-size:24px;margin:15px 0 9px}
+.auth-card p{font-size:13px;line-height:1.6;color:var(--muted)}
+.auth-card label{display:block;margin:22px 0 8px}.auth-card input{width:100%}
+.auth-card .primary-btn{width:100%;margin-top:15px}
+.auth-message{margin-top:15px;overflow-wrap:anywhere}.auth-message.success{color:var(--green)}.auth-message.error{color:var(--red)}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}aside{width:190px}}
+@media(max-width:700px){.layout{display:block}aside{width:100%;padding:15px;border-right:0;border-bottom:1px solid var(--border)}.logo{margin-bottom:15px}.nav-label,.sidebar-note{display:none}nav{display:flex;overflow-x:auto;gap:5px}.nav-item{white-space:nowrap;width:auto;margin:0}main{padding:18px 12px}h1{font-size:23px}.stat-card{padding:14px}.stat-value{font-size:23px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+
+<!-- OWNER LOGIN -->
+<div class="auth-screen" id="authScreen">
+  <section class="auth-card">
+    <div class="logo">IRON<span>HUB.</span></div>
+
+    <h1>Owner sign in</h1>
+    <p>Sign in using your registered owner email and password.</p>
+
+    <form id="passwordLoginForm">
+      <label for="loginEmail">Owner email</label>
+      <input
+        id="loginEmail"
+        type="email"
+        autocomplete="username"
+        required
+        placeholder="you@example.com"
+      >
+
+      <label for="loginPassword">Password</label>
+      <input
+        id="loginPassword"
+        type="password"
+        autocomplete="current-password"
+        required
+        placeholder="Enter your password"
+      >
+
+      <button class="primary-btn" id="loginBtn" type="submit">
+        Sign in
+      </button>
+    </form>
+    
+    <p style="text-align:right; margin-top:12px;">
+      <a href="#" id="forgotPasswordLink" style="color:#b9f65c; text-decoration:none;">
+        Forgot Password?
+      </a>
+    </p>
+
+    <form id="resetPasswordForm" hidden>
+      <label for="newPassword">New password</label>
+      <input
+        id="newPassword"
+        type="password"
+        minlength="8"
+        autocomplete="new-password"
+        placeholder="Enter new password"
+        required
+      >
+
+      <label for="confirmPassword">Confirm new password</label>
+      <input
+        id="confirmPassword"
+        type="password"
+        minlength="8"
+        autocomplete="new-password"
+        placeholder="Confirm new password"
+        required
+      >
+
+      <button class="primary-btn" type="submit">
+        Update Password
+      </button>
+    </form>
+
+    <p id="authMessage" class="auth-message" role="status"></p>
+
+    <p style="margin-top:12px">
+      Your account is restricted to authorized gym owners.
+    </p>
+  </section>
+</div>
+
+<div class="layout" id="appLayout" hidden>
+  <aside>
+    <div class="logo">IRON<span>HUB.</span></div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav>
+      <button class="nav-item active" data-target="dashboard">▦ Dashboard</button>
+      <button class="nav-item" data-target="members">♙ Members</button>
+      <button class="nav-item" data-target="alerts">◷ Expiry Alerts</button>
+    </nav>
+    <p class="sidebar-note">Gym Management System<br>Manage members. Track renewals. Grow your gym.</p>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <h1>Dashboard Overview</h1>
+        <p class="subtitle" id="today"></p>
+      </div>
+      <div class="account-tools">
+        <span class="account-email" id="signedInEmail"></span>
+        <button class="secondary-btn" id="signOutBtn" type="button">Sign out</button>
+        <button class="primary-btn" id="addMemberBtn" type="button">+ Add Member</button>
+      </div>
+    </header>
+
+    <section class="stats" id="dashboard">
+      <div class="stat-card"><p class="stat-title">Total Members</p><div class="stat-value" id="totalMembers">0</div><p class="stat-description">All registered members</p></div>
+      <div class="stat-card"><p class="stat-title">Active Members</p><div class="stat-value green" id="activeMembers">0</div><p class="stat-description">Membership valid today</p></div>
+      <div class="stat-card"><p class="stat-title">Expiring in 7 Days</p><div class="stat-value yellow" id="expiringMembers">0</div><p class="stat-description">Renewal reminders needed</p></div>
+      <div class="stat-card"><p class="stat-title">Expired Members</p><div class="stat-value red" id="expiredMembers">0</div><p class="stat-description">Membership ended</p></div>
+    </section>
+
+    <section class="section" id="members">
+      <div class="section-heading"><h2>Member Management</h2><span class="subtitle" id="memberCount">0 records</span></div>
+      <div class="toolbar">
+        <input class="search" id="searchInput" type="search" placeholder="Search name, phone or member ID..." aria-label="Search members">
+        <select id="statusFilter" aria-label="Filter status">
+          <option value="all">All statuses</option><option value="active">Active</option><option value="soon">Expiring soon</option><option value="expired">Expired</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Member</th><th>Phone</th><th>Plan</th><th>Joined</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="memberTable"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="emptyMessage" hidden>No members found.</p>
+    </section>
+
+    <section class="section" id="alerts">
+      <div class="section-heading"><h2>Membership Alerts</h2><span class="subtitle">Next 7 days and overdue</span></div>
+      <div class="alert-list" id="alertList"></div>
+    </section>
+    <p class="notice">Connected to Supabase. Members and payment entries are stored online. Automated expiry emails are not configured yet.</p>
+  </main>
+</div>
+
+<dialog id="memberDialog">
+  <h2 id="dialogTitle">Add New Member</h2>
+  <form id="memberForm">
+    <input type="hidden" id="memberId">
+    <div class="form-grid">
+      <div class="field"><label for="name">Full Name *</label><input id="name" maxlength="100" required></div>
+      <div class="field"><label for="phone">Phone Number *</label><input id="phone" type="tel" maxlength="20" required placeholder="9876543210"></div>
+      <div class="field full"><label for="address">Address (optional)</label><input id="address" maxlength="200"></div>
+      <div class="field"><label for="plan">Membership Plan *</label><select id="plan" required><option>Monthly</option><option>Quarterly</option><option>Half-yearly</option><option>Yearly</option></select></div>
+      <div class="field"><label for="joined">Joining Date *</label><input id="joined" type="date" required></div>
+      <div class="field"><label for="expiry">Expiry Date *</label><input id="expiry" type="date" required></div>
+      <div class="field"><label for="fee">Plan Fee (₹) *</label><input id="fee" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label for="paid">Amount Paid (₹) *</label><input id="paid" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label for="paymentMethod">Payment Method</label><select id="paymentMethod"><option>UPI</option><option>Cash</option><option>Card</option><option>Bank Transfer</option></select></div>
+      <p id="paidHelp" class="payment-note">For a new member, payment received today is recorded in payment history.</p>
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+      <button type="submit" class="primary-btn" id="saveBtn">Save Member</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Supabase JavaScript client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+
+const SUPABASE_URL = "https://lfifxdgfzrsdhflkvcei.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_9GZOzTA059nUanL0NsIMgg_rbL3eiZn";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const $ = id => document.getElementById(id);
+let members = [];
+let currentUser = null;
+let busy = false;
+
+function todayString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function addDays(dateString, days) {
+  const d = new Date(dateString + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate()+days);
+  return d.toISOString().slice(0,10);
+}
+function formatDate(s) {
+  if (!s) return "—";
+  const p=s.split("-");
+  return `${p[2]}/${p[1]}/${p[0]}`;
+}
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+function makeMemberCode() {
+  return "GYM-" + Date.now().toString(36).toUpperCase() +
+    Math.random().toString(36).slice(2,6).toUpperCase();
+}
+function authMessage(message,type="") {
+  $("authMessage").textContent=message;
+  $("authMessage").className="auth-message "+type;
+}
+function showLogin() {
+  currentUser=null;
+  members=[];
+  $("appLayout").hidden=true;
+  $("authScreen").hidden=false;
+  renderAll();
+}
+function showDashboard(user) {
+  currentUser=user;
+  $("authScreen").hidden=true;
+  $("appLayout").hidden=false;
+  $("signedInEmail").textContent=user.email || "";
+  $("today").textContent=new Date().toLocaleDateString("en-IN",{
+    weekday:"long",day:"numeric",month:"long",year:"numeric"
+  });
+}
+function getStatus(member) {
+  const today=todayString(), soon=addDays(today,7);
+  if(member.expiry<today) return {key:"expired",label:"Expired"};
+  if(member.expiry<=soon) return {key:"soon",label:"Expiring soon"};
+  return {key:"active",label:"Active"};
+}
+
+async function loadMembers() {
+  if(!currentUser) return;
+  $("memberTable").innerHTML='<tr><td colspan="7">Loading members...</td></tr>';
+  const {data,error}=await db.from("gym_members")
+    .select("id,owner_id,member_code,full_name,phone,address,plan,joined_on,expires_on,fee,amount_paid,payment_method,archived")
+    .eq("owner_id",currentUser.id)
+    .eq("archived",false)
+    .order("created_at",{ascending:false});
+
+  if(error) {
+    console.error(error);
+    $("memberTable").innerHTML="";
+    alert("Could not load members: "+error.message);
+    return;
+  }
+  members=(data||[]).map(r=>({
+    dbId:r.id,id:r.member_code,name:r.full_name,phone:r.phone,
+    address:r.address||"",plan:r.plan,joined:r.joined_on,expiry:r.expires_on,
+    fee:Number(r.fee||0),paid:Number(r.amount_paid||0),
+    paymentMethod:r.payment_method||"UPI"
+  }));
+  renderAll();
+}
+
+async function recordPayment(memberId,amount,method,notes) {
+  if(amount<=0) return;
+  const {error}=await db.from("gym_payments").insert({
+    owner_id:currentUser.id,
+    member_id:memberId,
+    amount:amount,
+    payment_method:method,
+    notes:notes||null
+  });
+  if(error) throw error;
+}
+
+function renderDashboard() {
+  const statuses=members.map(getStatus);
+  $("totalMembers").textContent=members.length;
+  $("activeMembers").textContent=statuses.filter(s=>s.key==="active").length;
+  $("expiringMembers").textContent=statuses.filter(s=>s.key==="soon").length;
+  $("expiredMembers").textContent=statuses.filter(s=>s.key==="expired").length;
+}
+function renderMembers() {
+  const q=$("searchInput").value.trim().toLowerCase();
+  const filter=$("statusFilter").value;
+  const filtered=members.filter(m=>{
+    const s=getStatus(m);
+    const match=[m.id,m.name,m.phone].some(v=>String(v||"").toLowerCase().includes(q));
+    return match&&(filter==="all"||filter===s.key);
+  });
+  $("memberCount").textContent=`${filtered.length} record${filtered.length===1?"":"s"}`;
+  $("emptyMessage").hidden=filtered.length>0;
+  $("memberTable").innerHTML=filtered.map(m=>{
+    const s=getStatus(m);
+    return `<tr>
+      <td><div class="member-name">${escapeHTML(m.name)}</div><div class="member-id">${escapeHTML(m.id)}</div></td>
+      <td>${escapeHTML(m.phone)}</td><td>${escapeHTML(m.plan)}</td>
+      <td>${formatDate(m.joined)}</td><td>${formatDate(m.expiry)}</td>
+      <td><span class="status ${s.key}">${s.label}</span></td>
+      <td><div class="actions">
+        <button class="secondary-btn" data-action="edit" data-id="${escapeHTML(m.dbId)}">Edit</button>
+        <button class="secondary-btn" data-action="renew" data-id="${escapeHTML(m.dbId)}">Renew</button>
+        <button class="danger-btn" data-action="delete" data-id="${escapeHTML(m.dbId)}">Delete</button>
+      </div></td></tr>`;
+  }).join("");
+}
+function renderAlerts() {
+  const today=todayString(), nextWeek=addDays(today,7);
+  const alerts=members.filter(m=>m.expiry<=nextWeek).sort((a,b)=>a.expiry.localeCompare(b.expiry));
+  if(!alerts.length) {
+    $("alertList").innerHTML='<p class="empty">No upcoming expiry alerts.</p>';
+    return;
+  }
+  $("alertList").innerHTML=alerts.map(m=>{
+    const s=getStatus(m);
+    const msg=s.key==="expired"?"Membership has expired":
+      m.expiry===today?"Membership expires today":`Expires on ${formatDate(m.expiry)}`;
+    return `<div class="alert-row"><div><strong>${escapeHTML(m.name)}</strong>
+      <p>${escapeHTML(m.phone)} · ${msg}</p></div>
+      <span class="status ${s.key}">${s.label}</span></div>`;
+  }).join("");
+}
+function renderAll() {
+  renderDashboard();
+  renderMembers();
+  renderAlerts();
+}
+
+function openAddDialog() {
+  $("memberForm").reset();
+  $("memberId").value="";
+  $("joined").value=todayString();
+  $("expiry").value=addDays(todayString(),30);
+  $("fee").value="1500";
+  $("paid").value="0";
+  $("paid").readOnly=false;
+  $("paidHelp").textContent="Initial payment received today. It will be recorded in payment history.";
+  $("dialogTitle").textContent="Add New Member";
+  $("saveBtn").textContent="Save Member";
+  $("memberDialog").showModal();
+}
+function openEditDialog(m) {
+  $("memberForm").reset();
+  $("memberId").value=m.dbId;
+  $("name").value=m.name;
+  $("phone").value=m.phone;
+  $("address").value=m.address;
+  $("plan").value=m.plan;
+  $("joined").value=m.joined;
+  $("expiry").value=m.expiry;
+  $("fee").value=m.fee;
+  $("paid").value=m.paid;
+  $("paid").readOnly=true;
+  $("paidHelp").textContent="Total paid is read-only here. Use Renew to record another payment.";
+  $("paymentMethod").value=m.paymentMethod;
+  $("dialogTitle").textContent="Edit Member";
+  $("saveBtn").textContent="Update Member";
+  $("memberDialog").showModal();
+}
+
+async function renewMember(m) {
+  const durations={"Monthly":30,"Quarterly":90,"Half-yearly":182,"Yearly":365};
+  const start=m.expiry>=todayString()?m.expiry:todayString();
+  const newExpiry=addDays(start,durations[m.plan]||30);
+  const feeText=prompt(`Renew ${m.name}\nNew expiry: ${formatDate(newExpiry)}\nRenewal fee (₹):`,String(m.fee));
+  if(feeText===null)return;
+  const fee=Number(feeText);
+  if(feeText.trim()===""||!Number.isFinite(fee)||fee<0){alert("Enter a valid fee.");return;}
+  const paidText=prompt("Amount received today (₹):",String(fee));
+  if(paidText===null)return;
+  const paid=Number(paidText);
+  if(paidText.trim()===""||!Number.isFinite(paid)||paid<0){alert("Enter a valid payment amount.");return;}
+  const methodText=prompt("Payment method: UPI, Cash, Card, or Bank Transfer",m.paymentMethod);
+  if(methodText===null)return;
+  const method=["UPI","Cash","Card","Bank Transfer"].find(x=>x.toLowerCase()===methodText.trim().toLowerCase());
+  if(!method){alert("Invalid payment method.");return;}
+  if(!confirm(`Renew ${m.name}?\nExpiry: ${formatDate(newExpiry)}\nFee: ₹${fee}\nReceived: ₹${paid}`))return;
+
+  try {
+    if(paid>0) await recordPayment(m.dbId,paid,method,"Membership renewal");
+    const {error}=await db.from("gym_members").update({
+      expires_on:newExpiry,fee,amount_paid:m.paid+paid,payment_method:method
+    }).eq("id",m.dbId).eq("owner_id",currentUser.id);
+    if(error)throw error;
+    await loadMembers();
+    alert("Membership renewal saved.");
+  } catch(e) {
+    console.error(e);
+    alert("Renewal may be incomplete: "+e.message+". Check the payment and member records before retrying.");
+    await loadMembers();
+  }
+}
+
+// =====================================================
+// PASSWORD LOGIN
+// =====================================================
+$("passwordLoginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (busy) return;
+
+  busy = true;
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "Signing in...";
+  authMessage("");
+
+  try {
+    const email = $("loginEmail").value.trim();
+    const password = $("loginPassword").value;
+
+    const { error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+    authMessage("Login successful!", "success");
+  } catch (error) {
+    console.error("Login error:", error);
+    authMessage(error.message || "Could not sign in.", "error");
+  } finally {
+    busy = false;
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "Sign in";
+  }
+});
+
+// =====================================================
+// FORGOT PASSWORD
+// =====================================================
+$("forgotPasswordLink").addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  const email = $("loginEmail").value.trim();
+
+  if (!email) {
+    authMessage("Enter your registered email first.", "error");
+    $("loginEmail").focus();
+    return;
+  }
+
+  try {
+    authMessage("Sending password reset email...");
+
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href.split("?")[0].split("#")[0]
+    });
+
+    if (error) throw error;
+
+    authMessage(
+      "If the account exists, check your inbox and spam folder.",
+      "success"
+    );
+  } catch (error) {
+    console.error("Password reset error:", error);
+    authMessage("Could not send reset email: " + error.message, "error");
+  }
+});
+
+// =====================================================
+// UPDATE PASSWORD
+// =====================================================
+$("resetPasswordForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const password = $("newPassword").value;
+  const confirm = $("confirmPassword").value;
+
+  if (password.length < 8) {
+    authMessage("Use at least 8 characters.", "error");
+    return;
+  }
+
+  if (password !== confirm) {
+    authMessage("Passwords do not match.", "error");
+    return;
+  }
+
+  const button = $("resetPasswordForm").querySelector(
+    "button[type='submit']"
+  );
+
+  button.disabled = true;
+  button.textContent = "Updating...";
+
+  try {
+    const { error } = await db.auth.updateUser({ password });
+
+    if (error) throw error;
+
+    const { error: signOutError } = await db.auth.signOut();
+
+    if (signOutError) {
+      console.error("Sign-out error:", signOutError);
+    }
+
+    $("resetPasswordForm").reset();
+    $("resetPasswordForm").hidden = true;
+    $("passwordLoginForm").hidden = false;
+    $("forgotPasswordLink").parentElement.hidden = false;
+    $("loginPassword").value = "";
+
+    authMessage(
+      "Password updated successfully. Sign in with your new password.",
+      "success"
+    );
+  } catch (error) {
+    console.error("Password update error:", error);
+    authMessage("Could not update password: " + error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Update Password";
+  }
+});
+
+$("signOutBtn").addEventListener("click",async()=>{
+  const {error}=await db.auth.signOut();
+  if(error)alert("Sign out error: "+error.message);
+  showLogin();
+});
+$("addMemberBtn").addEventListener("click",openAddDialog);
+$("cancelBtn").addEventListener("click",()=>$("memberDialog").close());
+$("searchInput").addEventListener("input",renderMembers);
+$("statusFilter").addEventListener("change",renderMembers);
+
+$("memberTable").addEventListener("click",async e=>{
+  const btn=e.target.closest("button[data-action]");
+  if(!btn||!currentUser)return;
+  const m=members.find(x=>x.dbId===btn.dataset.id);
+  if(!m)return;
+  if(btn.dataset.action==="edit"){openEditDialog(m);return;}
+  if(btn.dataset.action==="renew"){await renewMember(m);return;}
+  
+  if (btn.dataset.action === "delete") {
+    if (!confirm(
+      `Archive ${m.name}?\n` +
+      "The member will disappear from the active list, " +
+      "but payment history will be preserved."
+    )) return;
+
+    btn.disabled = true;
+
+    try {
+      const { error } = await db
+        .from("gym_members")
+        .update({ archived: true })
+        .eq("id", m.dbId)
+        .eq("owner_id", currentUser.id);
+
+      if (error) throw error;
+
+      await loadMembers();
+      alert("Member archived successfully.");
+    } catch (error) {
+      console.error("Archive member failed:", error);
+      alert("Could not archive member: " + error.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+});
+
+$("memberForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!currentUser){alert("Please sign in first.");return;}
+  const id=$("memberId").value;
+  const name=$("name").value.trim();
+  const phone=$("phone").value.trim();
+  const joined=$("joined").value;
+  const expiry=$("expiry").value;
+  const fee=Number($("fee").value);
+  const paid=Number($("paid").value);
+  const paymentMethod=$("paymentMethod").value;
+
+  if(!name||!phone||!joined||!expiry){alert("Complete all required fields.");return;}
+  if(expiry<joined){alert("Expiry date cannot be before joining date.");return;}
+  if(!Number.isFinite(fee)||!Number.isFinite(paid)||fee<0||paid<0){alert("Enter valid non-negative amounts.");return;}
+
+  const duplicate=members.some(m=>m.phone===phone&&m.dbId!==id);
+  if(duplicate&&!confirm("Another member has this phone number. Save anyway?"))return;
+
+  const existing=members.find(m=>m.dbId===id);
+  const row={
+    owner_id:currentUser.id,
+    full_name:name,
+    phone,
+    address:$("address").value.trim()||null,
+    plan:$("plan").value,
+    joined_on:joined,
+    expires_on:expiry,
+    fee,
+    amount_paid:existing?existing.paid:paid,
+    payment_method:paymentMethod
+  };
+
+  try {
+    if(existing) {
+      const {error}=await db.from("gym_members").update(row)
+        .eq("id",id).eq("owner_id",currentUser.id);
+      if(error)throw error;
+    } else {
+      row.member_code=makeMemberCode();
+      const {data,error}=await db.from("gym_members").insert(row).select("id").single();
+      if(error)throw error;
+      if(paid>0) {
+        try {
+          await recordPayment(data.id,paid,paymentMethod,"Initial membership payment");
+        } catch(paymentError) {
+          alert("Member saved, but payment history could not be saved: "+paymentError.message+
+            ". Check the payment table before entering the payment again.");
+        }
+      }
+    }
+    $("memberDialog").close();
+    await loadMembers();
+  } catch(e) {
+    console.error(e);
+    alert("Could not save member: "+e.message);
+  }
+});
+
+document.querySelectorAll(".nav-item").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    $(btn.dataset.target).scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+
+// =====================================================
+// AUTHENTICATION STATE AND SESSION RESTORATION
+// =====================================================
+
+let handlingPasswordRecovery = false;
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    handlingPasswordRecovery = true;
+
+    $("appLayout").hidden = true;
+    $("authScreen").hidden = false;
+    $("passwordLoginForm").hidden = true;
+    $("forgotPasswordLink").parentElement.hidden = true;
+    $("resetPasswordForm").hidden = false;
+
+    authMessage("Enter your new password below.", "success");
+    return;
+  }
+
+  // Do not hide the reset form while handling password recovery.
+  if (handlingPasswordRecovery) return;
+
+  if (session && session.user) {
+    $("resetPasswordForm").hidden = true;
+    $("passwordLoginForm").hidden = false;
+    $("forgotPasswordLink").parentElement.hidden = false;
+
+    showDashboard(session.user);
+    setTimeout(() => loadMembers(), 0);
+  } else {
+    $("resetPasswordForm").hidden = true;
+    $("passwordLoginForm").hidden = false;
+    $("forgotPasswordLink").parentElement.hidden = false;
+
+    showLogin();
+  }
+});
+
+// Restore an existing session.
+(async function init() {
+  const { data, error } = await db.auth.getSession();
+
+  if (error) {
+    console.error("Session check error:", error);
+    authMessage("Could not check login: " + error.message, "error");
+    showLogin();
+    return;
+  }
+
+  // Do not override the password recovery screen.
+  if (handlingPasswordRecovery) return;
+
+  if (data.session && data.session.user) {
+    showDashboard(data.session.user);
+    await loadMembers();
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>
