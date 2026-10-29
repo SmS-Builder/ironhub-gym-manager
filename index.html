@@ -206,8 +206,8 @@ dialog::backdrop{background:#000b}
       <div class="field full"><label for="address">Address (optional)</label><input id="address" maxlength="200"></div>
       <div class="field"><label for="plan">Membership Plan *</label><select id="plan" required><option>Monthly</option><option>Quarterly</option><option>Half-yearly</option><option>Yearly</option></select></div>
       <div class="field"><label for="joined">Joining Date *</label><input id="joined" type="date" required></div>
-      <div class="field"><label for="expiry">Expiry Date *</label><input id="expiry" type="date" required></div>
-      <div class="field"><label for="fee">Plan Fee (₹) *</label><input id="fee" type="number" min="0" step="0.01" required></div>
+      <div class="field"><label for="expiry">Expiry Date *</label><input id="expiry" type="date" required readonly></div>
+      <div class="field"><label for="fee">Plan Fee (₹) *</label><input id="fee" type="number" min="0" step="0.01" required readonly></div>
       <div class="field"><label for="paid">Amount Paid (₹) *</label><input id="paid" type="number" min="0" step="0.01" required></div>
       <div class="field"><label for="paymentMethod">Payment Method</label><select id="paymentMethod"><option>UPI</option><option>Cash</option><option>Card</option><option>Bank Transfer</option></select></div>
       <p id="paidHelp" class="payment-note">For a new member, payment received today is recorded in payment history.</p>
@@ -237,11 +237,57 @@ function todayString() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
+
 function addDays(dateString, days) {
   const d = new Date(dateString + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate()+days);
-  return d.toISOString().slice(0,10);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
+
+const PLAN_PRICES = {
+  "Monthly": 1000,
+  "Quarterly": 2000,
+  "Half-yearly": 4000,
+  "Yearly": 8000
+};
+
+const PLAN_MONTHS = {
+  "Monthly": 1,
+  "Quarterly": 3,
+  "Half-yearly": 6,
+  "Yearly": 12
+};
+
+function addMonths(dateString, months) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const targetMonth = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonth / 12);
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12;
+  const lastDay = new Date(
+    Date.UTC(targetYear, normalizedMonth + 1, 0)
+  ).getUTCDate();
+
+  return new Date(
+    Date.UTC(targetYear, normalizedMonth, Math.min(day, lastDay))
+  ).toISOString().slice(0, 10);
+}
+
+function updateMembershipFields() {
+  const plan = $("plan").value;
+  const joined = $("joined").value;
+
+  $("fee").value = PLAN_PRICES[plan] ?? 1000;
+
+  if (joined && PLAN_MONTHS[plan]) {
+    $("expiry").value = addMonths(joined, PLAN_MONTHS[plan]);
+  } else {
+    $("expiry").value = "";
+  }
+}
+
+$("plan").addEventListener("change", updateMembershipFields);
+$("joined").addEventListener("change", updateMembershipFields);
+
 function formatDate(s) {
   if (!s) return "—";
   const p=s.split("-");
@@ -374,17 +420,26 @@ function renderAll() {
 
 function openAddDialog() {
   $("memberForm").reset();
-  $("memberId").value="";
-  $("joined").value=todayString();
-  $("expiry").value=addDays(todayString(),30);
-  $("fee").value="1500";
-  $("paid").value="0";
-  $("paid").readOnly=false;
-  $("paidHelp").textContent="Initial payment received today. It will be recorded in payment history.";
-  $("dialogTitle").textContent="Add New Member";
-  $("saveBtn").textContent="Save Member";
+  $("memberId").value = "";
+
+  $("plan").value = "Monthly";
+  $("joined").value = todayString();
+
+  updateMembershipFields();
+
+  $("paid").value = "0";
+  $("paid").readOnly = false;
+
+  $("paidHelp").textContent =
+    "Payment received today for this new member. " +
+    "If greater than zero, it will be recorded in payment history.";
+
+  $("dialogTitle").textContent = "Add New Member";
+  $("saveBtn").textContent = "Save Member";
+
   $("memberDialog").showModal();
 }
+
 function openEditDialog(m) {
   $("memberForm").reset();
   $("memberId").value=m.dbId;
